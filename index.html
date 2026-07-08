@@ -20,6 +20,7 @@ body{margin:0;font-family:var(--font-sans);color:var(--body);background:linear-g
 .question-input::placeholder{color:var(--muted);opacity:.6}
 .cast-area{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;min-height:200px;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center}
 .cast-init{text-align:center}
+.dayan-note{max-width:420px;margin:0 auto 16px;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:#fffaf0;color:var(--body);font-size:.86rem;line-height:1.7;text-align:left}
 .btn-main{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:16px 36px;background:var(--btn);color:#fff;border:none;border-radius:var(--radius);font-family:var(--font-sans);font-size:1.1rem;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(180,83,9,.25);transition:background .15s,transform .1s}
 .btn-main:hover{background:var(--btn-hover)}
 .btn-main:active{transform:scale(.98)}
@@ -139,6 +140,7 @@ body{margin:0;font-family:var(--font-sans);color:var(--body);background:linear-g
       <div id="cast-area" class="cast-area">
         <!-- 初始：大按钮 -->
         <div id="cast-init" class="cast-init">
+          <p class="dayan-note">大衍本有五十，先留一根不用，象征太极；其余四十九根参与推演，所以从 49 根开始起卦。</p>
           <button id="btn-start" class="btn-main">🪷 开始起卦 (49根)</button>
           <p class="cast-hint">每点一次按钮 = 完成一变 · 18击成卦</p>
         </div>
