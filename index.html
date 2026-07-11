@@ -801,17 +801,11 @@ function renderTB(title, content) {
 async function fetchAI() {
   var container = document.getElementById('ai-result');
   if (!container) return;
-  var cfg = getLLMConfig();
-  if (!cfg.enabled || !cfg.endpoint) {
-    container.className = 'ai-not-configured';
-    container.textContent = '💡 在设置中配置 API 后可获取 AI 白话解读。支持 OpenAI / One API / 豆包等。';
-    return;
-  }
   container.className = 'ai-loading';
   container.textContent = 'AI 正在解读中...';
   var text = await getAIInterpretation(currentResult.question, currentResult);
   if (text) { container.className = 'ai-content'; container.textContent = text; }
-  else { container.className = 'ai-not-configured'; container.textContent = '⚠ AI 解读暂时不可用，请检查 API 配置或稍后再试。'; }
+  else { container.className = 'ai-not-configured'; container.textContent = '⚠ AI 解读暂时不可用，请稍后再试，或在设置中填写你自己的 API。'; }
 }
 
 // ==================== History ====================
