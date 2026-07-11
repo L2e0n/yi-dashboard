@@ -218,10 +218,10 @@ body{margin:0;font-family:var(--font-sans);color:var(--body);background:linear-g
         <h2>⚙ 设置</h2>
         <button id="btn-settings-close" class="btn-close">&times;</button>
       </div>
-      <label class="setting-item"><span>API 地址（OpenAI-compatible）</span><input id="setting-endpoint" placeholder="https://welfare.0xpsyche.me"></label>
+      <label class="setting-item"><span>API 地址（OpenAI-compatible）</span><input id="setting-endpoint" placeholder="留空使用网站默认模型"></label>
       <label class="setting-item"><span>API Key</span><input id="setting-apikey" type="password" placeholder="sk-..."></label>
-      <label class="setting-item"><span>模型</span><input id="setting-model" value="gpt-5.5" placeholder="gpt-5.5"></label>
-      <div class="settings-hint">💡 请填写基础地址，不用带 <code>/v1/chat/completions</code>。系统会自动按 OpenAI 格式请求：<br><code>{API地址}/v1/chat/completions</code></div>
+      <label class="setting-item"><span>模型（仅自定义 API）</span><input id="setting-model" value="gpt-5.5" placeholder="gpt-5.5"></label>
+      <div class="settings-hint">💡 API 地址和 Key 都留空时，使用网站默认模型。两项都填写时，改用你的 OpenAI-compatible API；基础地址不用带 <code>/v1/chat/completions</code>。</div>
       <div id="test-status" class="settings-hint"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button id="btn-settings-test" class="btn-ghost" type="button">测试连接</button>
@@ -443,6 +443,8 @@ function deleteReading(id) {
 }
 
 // ==================== LLM ====================
+var MANAGED_LLM_URL = 'https://api.guguji.icu/yi/llm';
+
 function normalizeOpenAIEndpoint(endpoint) {
   var url = (endpoint || '').trim();
   if (!url) return '';
@@ -453,10 +455,28 @@ function normalizeOpenAIEndpoint(endpoint) {
   return url + '/v1/chat/completions';
 }
 
+function usesManagedLLM(cfg) {
+  return !(cfg.endpoint && cfg.apiKey);
+}
+
+function buildLLMRequest(cfg, payload) {
+  if (usesManagedLLM(cfg)) {
+    return {
+      apiUrl: MANAGED_LLM_URL,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    };
+  }
+  payload.model = cfg.model || 'gpt-4';
+  return {
+    apiUrl: normalizeOpenAIEndpoint(cfg.endpoint),
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.apiKey },
+    body: JSON.stringify(payload)
+  };
+}
+
 async function getAIInterpretation(question, result) {
   var cfg = getLLMConfig();
-  if (!cfg.enabled || !cfg.endpoint) return null;
-  var apiUrl = normalizeOpenAIEndpoint(cfg.endpoint);
   var parts = [];
   if (question) parts.push('我问：「' + question + '」');
   parts.push('本卦：' + result.benGua.s + ' ' + result.benGua.m + '卦（第' + result.benGua.n + '卦）');
@@ -473,13 +493,16 @@ async function getAIInterpretation(question, result) {
   parts.push('请用大白话解读，针对我的问题给出建议。300字内。');
 
   try {
-    var resp = await fetch(apiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.apiKey },
-      body: JSON.stringify({ model: cfg.model || 'gpt-4', messages: [
+    var req = buildLLMRequest(cfg, {
+      messages: [
         { role: 'system', content: '你是精通《周易》的国学大师。用通俗直白的大白话解读卦象，结合用户问题给出接地气的建议。300字以内。' },
         { role: 'user', content: parts.join('\n') }
-      ], temperature: 0.7, max_tokens: 800 })
+      ], temperature: 0.7, max_tokens: 800
+    });
+    var resp = await fetch(req.apiUrl, {
+      method: 'POST',
+      headers: req.headers,
+      body: req.body
     });
     if (!resp.ok) return null;
     var data = await resp.json();
@@ -869,24 +892,25 @@ async function testSettingsConnection() {
   var status = document.getElementById('test-status');
   var btn = document.getElementById('btn-settings-test');
 
-  if (!endpoint || !apiKey) {
-    status.innerHTML = '<span style="color:#dc2626">请先填写 API 地址和 API Key。</span>';
+  if (!!endpoint !== !!apiKey) {
+    status.innerHTML = '<span style="color:#dc2626">自定义 API 需要同时填写 API 地址和 API Key。</span>';
     return;
   }
 
-  var apiUrl = normalizeOpenAIEndpoint(endpoint);
+  var cfg = { endpoint: endpoint, apiKey: apiKey, model: model };
+  var req = buildLLMRequest(cfg, {
+    messages: [{ role: 'user', content: 'Say hello in one short sentence.' }],
+    max_tokens: 64
+  });
+  var apiUrl = req.apiUrl;
   status.innerHTML = '正在测试：<code>' + esc(apiUrl) + '</code> ...';
   btn.disabled = true;
 
   try {
     var resp = await fetch(apiUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
-      body: JSON.stringify({
-        model: model,
-        messages: [{ role: 'user', content: 'Say hello in one short sentence.' }],
-        stream: false
-      })
+      headers: req.headers,
+      body: req.body
     });
 
     var text = await resp.text();
