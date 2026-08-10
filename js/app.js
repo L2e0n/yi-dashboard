@@ -469,7 +469,7 @@ function initSettings() {
   const config = getLLMConfig();
   document.getElementById('setting-endpoint').value = config.endpoint || '';
   document.getElementById('setting-apikey').value = config.apiKey || '';
-  document.getElementById('setting-model').value = config.model || 'gpt-4';
+  document.getElementById('setting-model').value = config.model || 'gpt-5.6-luna';
   document.getElementById('page-settings').classList.remove('hidden');
 }
 
@@ -477,7 +477,7 @@ function saveSettings() {
   const config = {
     endpoint: document.getElementById('setting-endpoint').value.trim(),
     apiKey: document.getElementById('setting-apikey').value.trim(),
-    model: document.getElementById('setting-model').value.trim() || 'gpt-4'
+    model: document.getElementById('setting-model').value.trim() || 'gpt-5.6-luna'
   };
   saveLLMConfig(config);
   document.getElementById('page-settings').classList.add('hidden');

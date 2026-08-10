@@ -82,7 +82,8 @@ export async function getInterpretation(question, hexagramResult) {
         'Authorization': `Bearer ${config.apiKey}`
       },
       body: JSON.stringify({
-        model: config.model || 'gpt-4',
+        model: config.model || 'gpt-5.6-luna',
+        reasoning_effort: 'xhigh',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }

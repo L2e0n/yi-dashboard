@@ -13,9 +13,9 @@ const STORAGE_KEYS = {
 export function getLLMConfig() {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.LLM_CONFIG);
-    return raw ? JSON.parse(raw) : { endpoint: '', apiKey: '', model: 'gpt-4', enabled: false };
+    return raw ? JSON.parse(raw) : { endpoint: '', apiKey: '', model: 'gpt-5.6-luna', enabled: false };
   } catch {
-    return { endpoint: '', apiKey: '', model: 'gpt-4', enabled: false };
+    return { endpoint: '', apiKey: '', model: 'gpt-5.6-luna', enabled: false };
   }
 }
 

@@ -218,9 +218,9 @@ body{margin:0;font-family:var(--font-sans);color:var(--body);background:linear-g
         <h2>⚙ 设置</h2>
         <button id="btn-settings-close" class="btn-close">&times;</button>
       </div>
-      <label class="setting-item"><span>API 地址（OpenAI-compatible）</span><input id="setting-endpoint" placeholder="留空使用网站默认模型"></label>
+      <label class="setting-item"><span>API 地址（OpenAI-compatible）</span><input id="setting-endpoint" placeholder="留空使用网站默认 AI（namax.ai）"></label>
       <label class="setting-item"><span>API Key</span><input id="setting-apikey" type="password" placeholder="sk-..."></label>
-      <label class="setting-item"><span>模型（仅自定义 API）</span><input id="setting-model" value="gpt-5.5" placeholder="gpt-5.5"></label>
+      <label class="setting-item"><span>模型（仅自定义 API）</span><input id="setting-model" value="gpt-5.6-luna" placeholder="gpt-5.6-luna"></label>
       <div class="settings-hint">💡 API 地址和 Key 都留空时，使用网站默认 AI（namax.ai · gpt-5.6-luna · xhigh）。两项都填写时，改用你的 OpenAI-compatible API；基础地址不用带 <code>/v1/chat/completions</code>。</div>
       <div id="test-status" class="settings-hint"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -426,8 +426,8 @@ function findHexagram(lines) {
 
 // ==================== Storage ====================
 function getLLMConfig() {
-  try { var r = localStorage.getItem('dayan_llm'); return r ? JSON.parse(r) : { endpoint:'', apiKey:'', model:'gpt-4', enabled:false }; }
-  catch(e) { return { endpoint:'', apiKey:'', model:'gpt-4', enabled:false }; }
+  try { var r = localStorage.getItem('dayan_llm'); return r ? JSON.parse(r) : { endpoint:'', apiKey:'', model:'gpt-5.6-luna', enabled:false }; }
+  catch(e) { return { endpoint:'', apiKey:'', model:'gpt-5.6-luna', enabled:false }; }
 }
 function saveLLMConfig(c) { c.enabled = !!(c.endpoint && c.apiKey); localStorage.setItem('dayan_llm', JSON.stringify(c)); }
 function getHistory() { try { var r = localStorage.getItem('dayan_history'); return r ? JSON.parse(r) : []; } catch(e) { return []; } }
@@ -467,7 +467,8 @@ function buildLLMRequest(cfg, payload) {
       body: JSON.stringify(payload)
     };
   }
-  payload.model = cfg.model || 'gpt-4';
+  payload.model = cfg.model || 'gpt-5.6-luna';
+  payload.reasoning_effort = 'xhigh';
   return {
     apiUrl: normalizeOpenAIEndpoint(cfg.endpoint),
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.apiKey },
@@ -866,7 +867,7 @@ function openSettings() {
   var c = getLLMConfig();
   document.getElementById('setting-endpoint').value = c.endpoint || '';
   document.getElementById('setting-apikey').value = c.apiKey || '';
-  document.getElementById('setting-model').value = c.model || 'gpt-5.5';
+  document.getElementById('setting-model').value = c.model || 'gpt-5.6-luna';
   document.getElementById('page-settings').classList.remove('hidden');
 }
 function closeSettings() { document.getElementById('page-settings').classList.add('hidden'); }
@@ -874,7 +875,7 @@ function saveSettings() {
   saveLLMConfig({
     endpoint: document.getElementById('setting-endpoint').value.trim(),
     apiKey: document.getElementById('setting-apikey').value.trim(),
-    model: document.getElementById('setting-model').value.trim() || 'gpt-5.5'
+    model: document.getElementById('setting-model').value.trim() || 'gpt-5.6-luna'
   });
   document.getElementById('page-settings').classList.add('hidden');
 }
@@ -882,7 +883,7 @@ function saveSettings() {
 async function testSettingsConnection() {
   var endpoint = document.getElementById('setting-endpoint').value.trim();
   var apiKey = document.getElementById('setting-apikey').value.trim();
-  var model = document.getElementById('setting-model').value.trim() || 'gpt-5.5';
+  var model = document.getElementById('setting-model').value.trim() || 'gpt-5.6-luna';
   var status = document.getElementById('test-status');
   var btn = document.getElementById('btn-settings-test');
 
